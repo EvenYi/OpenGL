@@ -71,22 +71,22 @@ static ShaderProgramSource ParseShader(const std::string& filepath) {
 }
 
 static unsigned int ComplieShader(unsigned int type, const std::string& source) {
-	unsigned int id = glCreateShader(type);
+	GLCall(unsigned int id = glCreateShader(type));
 	const char* src = source.c_str();
-	glShaderSource(id, 1, &src, nullptr);
-	glCompileShader(id);
+	GLCall(glShaderSource(id, 1, &src, nullptr));
+	GLCall(glCompileShader(id));
 
 	//Error Handling
 	int result;
-	glGetShaderiv(id, GL_COMPILE_STATUS, &result);
+	GLCall(glGetShaderiv(id, GL_COMPILE_STATUS, &result));
 	if (result == GL_FALSE) {
 		int length;
-		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length);
+		GLCall(glGetShaderiv(id, GL_INFO_LOG_LENGTH, &length));
 		char* message = (char*)_malloca(length * sizeof(length));
-		glGetShaderInfoLog(id, length, &length, message);
+		GLCall(glGetShaderInfoLog(id, length, &length, message));
 		std::cout << "Failed to complie " << (type == GL_VERTEX_SHADER ? "vertexShader" : "fragmentShader") << std::endl;
 		std::cout << message << std::endl;
-		glDeleteShader(id);
+		GLCall(glDeleteShader(id));
 		return 0;
 	}
 
@@ -98,13 +98,13 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
 	unsigned int vs = ComplieShader(GL_VERTEX_SHADER, vertexShader);
 	unsigned int fs = ComplieShader(GL_FRAGMENT_SHADER, fragmentShader);
 
-	glAttachShader(program, vs);
-	glAttachShader(program, fs);
-	glLinkProgram(program);
-	glValidateProgram(program);
+	GLCall(glAttachShader(program, vs));
+	GLCall(glAttachShader(program, fs));
+	GLCall(glLinkProgram(program));
+	GLCall(glValidateProgram(program));
 
-	glDeleteShader(vs);
-	glDeleteShader(fs);
+	GLCall(glDeleteShader(vs));
+	GLCall(glDeleteShader(fs));
 
 	return program;
 
@@ -120,6 +120,9 @@ int main(void)
 
 	/* Create a windowed mode window and its OpenGL context */
 	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	//Synchronize the screen refresh rate.
+	glfwSwapInterval(1);
+
 	if (!window)
 	{
 		glfwTerminate();
@@ -144,12 +147,12 @@ int main(void)
 	}; //Define the data
 
 	unsigned int buffer;
-	glGenBuffers(1, &buffer); //Generate the buffer, buffer is used to store the unique id for that buffer
-	glBindBuffer(GL_ARRAY_BUFFER, buffer); // Bind the buffer with current statement in another words select this buffer.
-	glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), position, GL_STATIC_DRAW); //Provide the buffer data and relative information 
+	GLCall(glGenBuffers(1, &buffer)); //Generate the buffer, buffer is used to store the unique id for that buffer
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); // Bind the buffer with current statement in another words select this buffer.
+	GLCall(glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), position, GL_STATIC_DRAW)); //Provide the buffer data and relative information 
 
-	glEnableVertexAttribArray(0); //Specifies the index of the generic vertex attribute to be enabled or disabled.
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (const void*)0);
+	GLCall(glEnableVertexAttribArray(0)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
+	GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (const void*)0));
 
 	unsigned int indices[] = {
 		0,1,2, //The up triangle three vertex indices
@@ -160,32 +163,46 @@ int main(void)
 	//Defince unique vertex indices buffer id
 	unsigned int indexBuffer;
 	//Generate the buffer, buffer is used to store the unique id for that buffer
-	glGenBuffers(1, &indexBuffer);
+	GLCall(glGenBuffers(1, &indexBuffer));
 	// Since we bind a vertex array indices,here target is GL_ELEMENT_ARRAY_BUFFER.
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
 	//Provide the buffer data and relative information 
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW); 
+	GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW));
 
 	ShaderProgramSource source = ParseShader("res/shader/basic.shader");
 	unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-	glUseProgram(shader);
+	GLCall(glUseProgram(shader));
 
+	//Get the id of uniform u_Color
+	//First parameter indicate that uniform in which program.
+	//Second parameter give the uniform name.
+	GLCall(int u_Id = glGetUniformLocation(shader, "u_Color"));
+	ASSERT(u_Id != -1);
+	//First parameter is the id(Location) of uniform
+	//Remaind parameters are data you want to assign to that uniform.
+	GLCall(glUniform4f(u_Id, 0.7, 0.2, 0.9, 1.0));
+	float r = 0.0f;
+	float increment = 0.05f;
 	/* Loop until the user closes the window */
 	while (!glfwWindowShouldClose(window))
 	{
 		/* Render here */
 		glClear(GL_COLOR_BUFFER_BIT);
-
+		//Assign R channel with r variable
+		GLCall(glUniform4f(u_Id, r, 0.2, 0.9, 1.0));
 		//Tell openGL to use selected buffer to draw a triangle.
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
-
 		//First parameter Specifies what kind of primitives to render.
 		//Second parameter indicate we using 6 vertex array indices.
 		//Third parameter indicate the type of array indices element.
 		//Forth parameter the pointer to vertex array indices buffer, 
 		//since we already bind it, this parameter is nullptr
-
 		GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+		
+		//Based on r value change increment.
+		increment = r > 1.0f ? -increment : increment;
+		increment = r < 0.0f ? -increment : increment;
+		r += increment;
 
 		/* Swap front and back buffers */
 		glfwSwapBuffers(window);
