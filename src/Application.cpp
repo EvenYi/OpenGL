@@ -8,8 +8,9 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "VertexArray.h"
+#include "Shader.h"
 
-
+/*
 struct ShaderProgramSource {
 	std::string VertexSource;
 	std::string FragmentSource;
@@ -88,7 +89,7 @@ static unsigned int CreateShader(const std::string& vertexShader, const std::str
 	return program;
 
 }
-
+*/
 int main(void)
 {
 	GLFWwindow* window;
@@ -171,27 +172,39 @@ int main(void)
 
 		IndexBuffer ib(indices, 6);
 
-		ShaderProgramSource source = ParseShader("res/shader/basic.shader");
-		unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-		GLCall(glUseProgram(shader));
+		Shader shader("res/shader/basic.shader");
+		shader.Bind();
+
+		//ShaderProgramSource source = ParseShader("res/shader/basic.shader");
+		//unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
+		//GLCall(glUseProgram(shader));
 
 		//Get the id of uniform u_Color
 		//First parameter indicate that uniform in which program.
 		//Second parameter give the uniform name.
-		GLCall(int u_Id = glGetUniformLocation(shader, "u_Color"));
-		ASSERT(u_Id != -1);
+
+		shader.SetUniform4f("u_Color", 0.7, 0.2, 0.9, 1.0);
+		//GLCall(int u_Id = glGetUniformLocation(shader, "u_Color"));
+		//ASSERT(u_Id != -1);
 		//First parameter is the id(Location) of uniform
 		//Remaind parameters are data you want to assign to that uniform.
-		GLCall(glUniform4f(u_Id, 0.7, 0.2, 0.9, 1.0));
+		//GLCall(glUniform4f(u_Id, 0.7, 0.2, 0.9, 1.0));
+
+
 		float r = 0.0f;
 		float increment = 0.05f;
 		/* Loop until the user closes the window */
 
+		/*
 		GLCall(glUseProgram(0));//Cancle shader
 		GLCall(glBindVertexArray(0));//Unbind vertex array object
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0)); //Unbind vertex buffer
 		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)); //Unbind index buffer
-
+		*/
+		va.Unbind();
+		vb.UnBind();
+		ib.UnBind();
+		shader.UnBind();
 
 		while (!glfwWindowShouldClose(window))
 		{
@@ -200,9 +213,12 @@ int main(void)
 
 			//Tell openGL to use selected buffer to draw a triangle.
 			//glDrawArrays(GL_TRIANGLES, 0, 3);
-			GLCall(glUseProgram(shader));//Cancle shader
+			//GLCall(glUseProgram(shader));//Cancle shader
+			shader.Bind();
+
 			//Assign R channel with r variable
-			GLCall(glUniform4f(u_Id, r, 0.2, 0.9, 1.0));
+			//GLCall(glUniform4f(u_Id, r, 0.2, 0.9, 1.0));
+			shader.SetUniform4f("u_Color", r, 0.2, 0.9, 1.0);
 			//GLCall(glBindVertexArray(vao)); //Bind vertex array object.
 			va.Bind();
 			//GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); //bind vertex buffer
