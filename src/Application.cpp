@@ -7,6 +7,7 @@
 #include "Renderer.h"
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
+#include "VertexArray.h"
 
 
 struct ShaderProgramSource {
@@ -129,10 +130,12 @@ int main(void)
 		0.5,-0.5		//Squre point 3
 		}; //Define the data
 
+		/*
 		unsigned int vao;
 		GLCall(glGenVertexArrays(1, &vao)); //Generate a veratex array object and get unique id.
 		GLCall(glBindVertexArray(vao));		//Bind a vertex array object.
-
+		*/
+		VertexArray va;
 		/*
 		unsigned int buffer;
 		GLCall(glGenBuffers(1, &buffer)); //Generate the buffer, buffer is used to store the unique id for that buffer
@@ -141,8 +144,13 @@ int main(void)
 		*/
 		VertexBuffer vb(position, 8 * sizeof(float));
 
+		/*
 		GLCall(glEnableVertexAttribArray(0)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
 		GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (const void*)0));
+		*/
+		VertexBufferLayout layout;
+		layout.Push<float>(2); //Since our vertex is 2 dimensional the parameter is 2;
+		va.Addbuffer(vb, layout);
 
 		unsigned int indices[] = {
 			0,1,2, //The up triangle three vertex indices
@@ -195,7 +203,8 @@ int main(void)
 			GLCall(glUseProgram(shader));//Cancle shader
 			//Assign R channel with r variable
 			GLCall(glUniform4f(u_Id, r, 0.2, 0.9, 1.0));
-			GLCall(glBindVertexArray(vao)); //Bind vertex array object.
+			//GLCall(glBindVertexArray(vao)); //Bind vertex array object.
+			va.Bind();
 			//GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); //bind vertex buffer
 			//GLCall(glEnableVertexAttribArray(0)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
 			//GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (const void*)0));//layout 
