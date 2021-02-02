@@ -8,6 +8,7 @@
 #include "VertexBuffer.h"
 #include "IndexBuffer.h"
 #include "VertexArray.h"
+#include "VertexBufferLayout.h"
 #include "Shader.h"
 
 /*
@@ -205,35 +206,17 @@ int main(void)
 		vb.UnBind();
 		ib.UnBind();
 		shader.UnBind();
+		Renderer renderer;
 
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
-			glClear(GL_COLOR_BUFFER_BIT);
-
-			//Tell openGL to use selected buffer to draw a triangle.
-			//glDrawArrays(GL_TRIANGLES, 0, 3);
-			//GLCall(glUseProgram(shader));//Cancle shader
+			
+			renderer.Clear();
 			shader.Bind();
-
-			//Assign R channel with r variable
-			//GLCall(glUniform4f(u_Id, r, 0.2, 0.9, 1.0));
 			shader.SetUniform4f("u_Color", r, 0.2, 0.9, 1.0);
-			//GLCall(glBindVertexArray(vao)); //Bind vertex array object.
-			va.Bind();
-			//GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); //bind vertex buffer
-			//GLCall(glEnableVertexAttribArray(0)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
-			//GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (const void*)0));//layout 
 
-			//GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer)); //bind index buffer
-			ib.Bind();
-
-			//First parameter Specifies what kind of primitives to render.
-			//Second parameter indicate we using 6 vertex array indices.
-			//Third parameter indicate the type of array indices element.
-			//Forth parameter the pointer to vertex array indices buffer, 
-			//since we already bind it, this parameter is nullptr
-			GLCall(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr));
+			renderer.Draw(va, ib, shader);
 
 			//Based on r value change increment.
 			increment = r > 1.0f ? -increment : increment;

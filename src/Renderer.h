@@ -1,5 +1,8 @@
 #pragma once
-#include"GL/glew.h"
+#include "GL/glew.h"
+#include "VertexArray.h"
+#include "Shader.h"
+#include "IndexBuffer.h"
 
 #define ASSERT(x) if(!(x)) __debugbreak();
 // Fisrt we call GLClearError funtion.
@@ -12,3 +15,16 @@
 
 void GLClearError();
 bool GLLogCall(const char* function, const char* file, int line);
+
+class Renderer
+{
+public:
+	Renderer();
+	~Renderer();
+	void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
+	void Clear() const;
+
+private:
+
+
+};
