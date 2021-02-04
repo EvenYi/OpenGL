@@ -10,6 +10,7 @@
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "Shader.h"
+#include "Texture.h"
 
 /*
 struct ShaderProgramSource {
@@ -125,11 +126,13 @@ int main(void)
 	std::cout << glewGetString(GL_VERSION_1_1) << std::endl;
 
 	{
-		float position[] = {
-		-0.5,0.5,		//Squre point 0
-		0.5,0.5,		//Squre point 1 Duplicated point
-		-0.5,-0.5,		//Squre point 2 Duplicated point
-		0.5,-0.5		//Squre point 3
+		// Texture image in our case is flip upside down.
+		// Texture coordinate start from left bottom is (0,0)
+		float position[] = {    
+		-0.5f, 0.5f, 0.0f, 1.0f,    //Squre point 0
+		0.5f, 0.5f, 1.0f, 1.0f,		//Squre point 1 Duplicated point
+		-0.5f, -0.5f, 0.0f, 0.0f,	//Squre point 2 Duplicated point
+		0.5f, -0.5f, 1.0f, 0.0f		//Squre point 3
 		}; //Define the data
 
 		/*
@@ -144,7 +147,7 @@ int main(void)
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); // Bind the buffer with current statement in another words select this buffer.
 		GLCall(glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), position, GL_STATIC_DRAW)); //Provide the buffer data and relative information
 		*/
-		VertexBuffer vb(position, 8 * sizeof(float));
+		VertexBuffer vb(position, 4 * 4 * sizeof(float));
 
 		/*
 		GLCall(glEnableVertexAttribArray(0)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
@@ -152,6 +155,7 @@ int main(void)
 		*/
 		VertexBufferLayout layout;
 		layout.Push<float>(2); //Since our vertex is 2 dimensional the parameter is 2;
+		layout.Push<float>(2); //Our vertex texture coordinate is 2 dimensional the parameter is 2;
 		va.Addbuffer(vb, layout);
 
 		unsigned int indices[] = {
@@ -159,6 +163,10 @@ int main(void)
 			1,3,2  //The down triangle three vertex indices
 
 		}; //Define the data
+		
+		//RGBa the "a" means alpha which decide how much transparent 
+		//GL_ONE_MINUS_SRC_ALPHA just let it complete transparent.
+		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
 		/*
 		//Defince unique vertex indices buffer id
@@ -191,6 +199,13 @@ int main(void)
 		//Remaind parameters are data you want to assign to that uniform.
 		//GLCall(glUniform4f(u_Id, 0.7, 0.2, 0.9, 1.0));
 
+		Texture texture("res/textures/penpen.png");
+		//Textur Bind() function default value is 0.
+		texture.Bind();
+		
+		//Since we bound our texture in slot 0
+		shader.SetUniform1i("u_Texture", 0);
+		
 
 		float r = 0.0f;
 		float increment = 0.05f;
