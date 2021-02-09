@@ -107,7 +107,7 @@ int main(void)
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	/* Create a windowed mode window and its OpenGL context */
-	window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+	window = glfwCreateWindow(960, 540, "Hello World", NULL, NULL);
 	//Synchronize the screen refresh rate.
 	glfwSwapInterval(1);
 
@@ -131,10 +131,10 @@ int main(void)
 		// Texture image in our case is flip upside down.
 		// Texture coordinate start from left bottom is (0,0)
 		float position[] = {    
-		-0.5f, 0.5f, 0.0f, 1.0f,    //Squre point 0
-		0.5f, 0.5f, 1.0f, 1.0f,		//Squre point 1 Duplicated point
-		-0.5f, -0.5f, 0.0f, 0.0f,	//Squre point 2 Duplicated point
-		0.5f, -0.5f, 1.0f, 0.0f		//Squre point 3
+		100.0f, 200.0f, 0.0f, 1.0f,    //Squre point 0
+		200.0f, 200.0f, 1.0f, 1.0f,		//Squre point 1 Duplicated point
+		100.0f, 100.0f, 0.0f, 0.0f,	//Squre point 2 Duplicated point
+		200.0f, 100.0f, 1.0f, 0.0f		//Squre point 3
 		}; //Define the data
 
 		/*
@@ -190,7 +190,11 @@ int main(void)
 		//4th parameter specify top boundary
 		//5th parameter specify zNear boundary
 		//6th parameter specify zfar boundary
-		glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+		glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
+		glm::mat4 mode = glm::translate(glm::mat4(1.0), glm::vec3(200, 200, 0));
+		//view move right 100 pixels equal to object move left 100 pxiels
+		glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(-100, 0, 0));
+		glm::mat4 mvp = proj * view * mode;
 
 		Shader shader("res/shader/basic.shader");
 		shader.Bind();
@@ -204,7 +208,7 @@ int main(void)
 		//Second parameter give the uniform name.
 
 		shader.SetUniform4f("u_Color", 0.7, 0.2, 0.9, 1.0);
-		shader.SetUniformMat4f("u_MVP", proj);
+		shader.SetUniformMat4f("u_MVP", mvp);
 		//GLCall(int u_Id = glGetUniformLocation(shader, "u_Color"));
 		//ASSERT(u_Id != -1);
 		//First parameter is the id(Location) of uniform
