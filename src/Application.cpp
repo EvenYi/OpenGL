@@ -11,6 +11,8 @@
 #include "VertexBufferLayout.h"
 #include "Shader.h"
 #include "Texture.h"
+#include "glm/glm.hpp"
+#include "glm/gtc/matrix_transform.hpp"
 
 /*
 struct ShaderProgramSource {
@@ -166,8 +168,9 @@ int main(void)
 		
 		//RGBa the "a" means alpha which decide how much transparent 
 		//GL_ONE_MINUS_SRC_ALPHA just let it complete transparent.
+		GLCall(glEnable(GL_BLEND));
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-
+		
 		/*
 		//Defince unique vertex indices buffer id
 		unsigned int indexBuffer;
@@ -181,6 +184,14 @@ int main(void)
 
 		IndexBuffer ib(indices, 6);
 
+		//1st parameter specify left boundary
+		//2nd parameter specify right boundary
+		//3rd parameter specify bottom boundary
+		//4th parameter specify top boundary
+		//5th parameter specify zNear boundary
+		//6th parameter specify zfar boundary
+		glm::mat4 proj = glm::ortho(-2.0f, 2.0f, -1.5f, 1.5f, -1.0f, 1.0f);
+
 		Shader shader("res/shader/basic.shader");
 		shader.Bind();
 
@@ -193,6 +204,7 @@ int main(void)
 		//Second parameter give the uniform name.
 
 		shader.SetUniform4f("u_Color", 0.7, 0.2, 0.9, 1.0);
+		shader.SetUniformMat4f("u_MVP", proj);
 		//GLCall(int u_Id = glGetUniformLocation(shader, "u_Color"));
 		//ASSERT(u_Id != -1);
 		//First parameter is the id(Location) of uniform
