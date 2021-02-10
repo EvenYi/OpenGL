@@ -13,6 +13,8 @@
 #include "Texture.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw_gl3.h"
 
 /*
 struct ShaderProgramSource {
@@ -191,10 +193,10 @@ int main(void)
 		//5th parameter specify zNear boundary
 		//6th parameter specify zfar boundary
 		glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-		glm::mat4 mode = glm::translate(glm::mat4(1.0), glm::vec3(200, 200, 0));
+		
 		//view move right 100 pixels equal to object move left 100 pxiels
 		glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(-100, 0, 0));
-		glm::mat4 mvp = proj * view * mode;
+	
 
 		Shader shader("res/shader/basic.shader");
 		shader.Bind();
@@ -208,7 +210,7 @@ int main(void)
 		//Second parameter give the uniform name.
 
 		shader.SetUniform4f("u_Color", 0.7, 0.2, 0.9, 1.0);
-		shader.SetUniformMat4f("u_MVP", mvp);
+		
 		//GLCall(int u_Id = glGetUniformLocation(shader, "u_Color"));
 		//ASSERT(u_Id != -1);
 		//First parameter is the id(Location) of uniform
@@ -222,9 +224,21 @@ int main(void)
 		//Since we bound our texture in slot 0
 		shader.SetUniform1i("u_Texture", 0);
 		
+		//Create context, inital window and style
+		ImGui::CreateContext();
+		ImGui_ImplGlfwGL3_Init(window, true);
+		ImGui::StyleColorsDark();
+
+		//Define variable for our window;
+		bool show_demo_window = true;
+		bool show_another_window = false;
+		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 
 		float r = 0.0f;
 		float increment = 0.05f;
+
+		glm::vec3 translation(200, 200, 0);
 		/* Loop until the user closes the window */
 
 		/*
@@ -242,10 +256,17 @@ int main(void)
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
+
+			//Put this NewFrame before you put stuffs into frame
+			ImGui_ImplGlfwGL3_NewFrame();
+
+			glm::mat4 mode = glm::translate(glm::mat4(1.0), translation);
+			glm::mat4 mvp = proj * view * mode;
 			
 			renderer.Clear();
 			shader.Bind();
 			shader.SetUniform4f("u_Color", r, 0.2, 0.9, 1.0);
+			shader.SetUniformMat4f("u_MVP", mvp);
 
 			renderer.Draw(va, ib, shader);
 
@@ -253,6 +274,16 @@ int main(void)
 			increment = r > 1.0f ? -increment : increment;
 			increment = r < 0.0f ? -increment : increment;
 			r += increment;
+
+			// Show a simple window.
+			{
+				//Since translation is 3D float we need use SliderFloat3
+				ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 960.0f);    
+				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			}
+			// Rendering
+			ImGui::Render();
+			ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 
 			/* Swap front and back buffers */
 			glfwSwapBuffers(window);
@@ -262,6 +293,8 @@ int main(void)
 		}
 	
 	}
+	ImGui_ImplGlfwGL3_Shutdown();
+	ImGui::DestroyContext();
 
 	glfwTerminate();
 	return 0;
