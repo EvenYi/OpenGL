@@ -133,10 +133,10 @@ int main(void)
 		// Texture image in our case is flip upside down.
 		// Texture coordinate start from left bottom is (0,0)
 		float position[] = {    
-		100.0f, 200.0f, 0.0f, 1.0f,    //Squre point 0
-		200.0f, 200.0f, 1.0f, 1.0f,		//Squre point 1 Duplicated point
-		100.0f, 100.0f, 0.0f, 0.0f,	//Squre point 2 Duplicated point
-		200.0f, 100.0f, 1.0f, 0.0f		//Squre point 3
+		-50.0f, 50.0f, 0.0f, 1.0f,    //Squre point 0
+		50.0f, 50.0f, 1.0f, 1.0f,		//Squre point 1 Duplicated point
+		-50.0f, -50.0f, 0.0f, 0.0f,	//Squre point 2 Duplicated point
+		50.0f, -50.0f, 1.0f, 0.0f		//Squre point 3
 		}; //Define the data
 
 		/*
@@ -194,8 +194,8 @@ int main(void)
 		//6th parameter specify zfar boundary
 		glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
 		
-		//view move right 100 pixels equal to object move left 100 pxiels
-		glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(-100, 0, 0));
+		//view move right 0 pixels equal to object move left 0 pxiels
+		glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0, 0, 0));
 	
 
 		Shader shader("res/shader/basic.shader");
@@ -238,7 +238,8 @@ int main(void)
 		float r = 0.0f;
 		float increment = 0.05f;
 
-		glm::vec3 translation(200, 200, 0);
+		glm::vec3 translationA(200, 200, 0);
+		glm::vec3 translationB(100, 100, 0);
 		/* Loop until the user closes the window */
 
 		/*
@@ -260,15 +261,31 @@ int main(void)
 			//Put this NewFrame before you put stuffs into frame
 			ImGui_ImplGlfwGL3_NewFrame();
 
-			glm::mat4 mode = glm::translate(glm::mat4(1.0), translation);
-			glm::mat4 mvp = proj * view * mode;
-			
 			renderer.Clear();
-			shader.Bind();
-			shader.SetUniform4f("u_Color", r, 0.2, 0.9, 1.0);
-			shader.SetUniformMat4f("u_MVP", mvp);
+			//Draw object A
+			{
+				glm::mat4 mode = glm::translate(glm::mat4(1.0), translationA);
+				glm::mat4 mvp = proj * view * mode;
 
-			renderer.Draw(va, ib, shader);
+				shader.Bind();
+				shader.SetUniform4f("u_Color", r, 0.2, 0.9, 1.0);
+				shader.SetUniformMat4f("u_MVP", mvp);
+
+				renderer.Draw(va, ib, shader);
+			}
+			//Draw object B
+			{
+				glm::mat4 mode = glm::translate(glm::mat4(1.0), translationB);
+				glm::mat4 mvp = proj * view * mode;
+
+				shader.Bind();
+				shader.SetUniform4f("u_Color", r, 0.2, 0.9, 1.0);
+				shader.SetUniformMat4f("u_MVP", mvp);
+
+				renderer.Draw(va, ib, shader);
+			}
+			
+			
 
 			//Based on r value change increment.
 			increment = r > 1.0f ? -increment : increment;
@@ -278,7 +295,8 @@ int main(void)
 			// Show a simple window.
 			{
 				//Since translation is 3D float we need use SliderFloat3
-				ImGui::SliderFloat3("Translation", &translation.x, 0.0f, 960.0f);    
+				ImGui::SliderFloat3("TranslationA", &translationA.x, 0.0f, 960.0f);
+				ImGui::SliderFloat3("TranslationB", &translationB.x, 0.0f, 960.0f);
 				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			}
 			// Rendering
