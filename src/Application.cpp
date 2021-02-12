@@ -15,6 +15,7 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
+#include "test/TestClearColor.h"
 
 /*
 struct ShaderProgramSource {
@@ -130,175 +131,32 @@ int main(void)
 	std::cout << glewGetString(GL_VERSION_1_1) << std::endl;
 
 	{
-		// Texture image in our case is flip upside down.
-		// Texture coordinate start from left bottom is (0,0)
-		float position[] = {    
-		-50.0f, 50.0f, 0.0f, 1.0f,    //Squre point 0
-		50.0f, 50.0f, 1.0f, 1.0f,		//Squre point 1 Duplicated point
-		-50.0f, -50.0f, 0.0f, 0.0f,	//Squre point 2 Duplicated point
-		50.0f, -50.0f, 1.0f, 0.0f		//Squre point 3
-		}; //Define the data
-
-		/*
-		unsigned int vao;
-		GLCall(glGenVertexArrays(1, &vao)); //Generate a veratex array object and get unique id.
-		GLCall(glBindVertexArray(vao));		//Bind a vertex array object.
-		*/
-		VertexArray va;
-		/*
-		unsigned int buffer;
-		GLCall(glGenBuffers(1, &buffer)); //Generate the buffer, buffer is used to store the unique id for that buffer
-		GLCall(glBindBuffer(GL_ARRAY_BUFFER, buffer)); // Bind the buffer with current statement in another words select this buffer.
-		GLCall(glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), position, GL_STATIC_DRAW)); //Provide the buffer data and relative information
-		*/
-		VertexBuffer vb(position, 4 * 4 * sizeof(float));
-
-		/*
-		GLCall(glEnableVertexAttribArray(0)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
-		GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GL_FLOAT) * 2, (const void*)0));
-		*/
-		VertexBufferLayout layout;
-		layout.Push<float>(2); //Since our vertex is 2 dimensional the parameter is 2;
-		layout.Push<float>(2); //Our vertex texture coordinate is 2 dimensional the parameter is 2;
-		va.Addbuffer(vb, layout);
-
-		unsigned int indices[] = {
-			0,1,2, //The up triangle three vertex indices
-			1,3,2  //The down triangle three vertex indices
-
-		}; //Define the data
 		
 		//RGBa the "a" means alpha which decide how much transparent 
 		//GL_ONE_MINUS_SRC_ALPHA just let it complete transparent.
 		GLCall(glEnable(GL_BLEND));
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 		
-		/*
-		//Defince unique vertex indices buffer id
-		unsigned int indexBuffer;
-		//Generate the buffer, buffer is used to store the unique id for that buffer
-		GLCall(glGenBuffers(1, &indexBuffer));
-		// Since we bind a vertex array indices,here target is GL_ELEMENT_ARRAY_BUFFER.
-		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer));
-		//Provide the buffer data and relative information
-		GLCall(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW));
-		*/
-
-		IndexBuffer ib(indices, 6);
-
-		//1st parameter specify left boundary
-		//2nd parameter specify right boundary
-		//3rd parameter specify bottom boundary
-		//4th parameter specify top boundary
-		//5th parameter specify zNear boundary
-		//6th parameter specify zfar boundary
-		glm::mat4 proj = glm::ortho(0.0f, 960.0f, 0.0f, 540.0f, -1.0f, 1.0f);
-		
-		//view move right 0 pixels equal to object move left 0 pxiels
-		glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(0, 0, 0));
-	
-
-		Shader shader("res/shader/basic.shader");
-		shader.Bind();
-
-		//ShaderProgramSource source = ParseShader("res/shader/basic.shader");
-		//unsigned int shader = CreateShader(source.VertexSource, source.FragmentSource);
-		//GLCall(glUseProgram(shader));
-
-		//Get the id of uniform u_Color
-		//First parameter indicate that uniform in which program.
-		//Second parameter give the uniform name.
-
-		shader.SetUniform4f("u_Color", 0.7, 0.2, 0.9, 1.0);
-		
-		//GLCall(int u_Id = glGetUniformLocation(shader, "u_Color"));
-		//ASSERT(u_Id != -1);
-		//First parameter is the id(Location) of uniform
-		//Remaind parameters are data you want to assign to that uniform.
-		//GLCall(glUniform4f(u_Id, 0.7, 0.2, 0.9, 1.0));
-
-		Texture texture("res/textures/penpen.png");
-		//Textur Bind() function default value is 0.
-		texture.Bind();
-		
-		//Since we bound our texture in slot 0
-		shader.SetUniform1i("u_Texture", 0);
-		
 		//Create context, inital window and style
 		ImGui::CreateContext();
 		ImGui_ImplGlfwGL3_Init(window, true);
 		ImGui::StyleColorsDark();
 
-		//Define variable for our window;
-		bool show_demo_window = true;
-		bool show_another_window = false;
-		ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
-
-		float r = 0.0f;
-		float increment = 0.05f;
-
-		glm::vec3 translationA(200, 200, 0);
-		glm::vec3 translationB(100, 100, 0);
-		/* Loop until the user closes the window */
-
-		/*
-		GLCall(glUseProgram(0));//Cancle shader
-		GLCall(glBindVertexArray(0));//Unbind vertex array object
-		GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0)); //Unbind vertex buffer
-		GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)); //Unbind index buffer
-		*/
-		va.Unbind();
-		vb.UnBind();
-		ib.UnBind();
-		shader.UnBind();
 		Renderer renderer;
+		test::TestClearColor test;
 
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
 
 			//Put this NewFrame before you put stuffs into frame
-			ImGui_ImplGlfwGL3_NewFrame();
-
 			renderer.Clear();
-			//Draw object A
-			{
-				glm::mat4 mode = glm::translate(glm::mat4(1.0), translationA);
-				glm::mat4 mvp = proj * view * mode;
-
-				shader.Bind();
-				shader.SetUniform4f("u_Color", r, 0.2, 0.9, 1.0);
-				shader.SetUniformMat4f("u_MVP", mvp);
-
-				renderer.Draw(va, ib, shader);
-			}
-			//Draw object B
-			{
-				glm::mat4 mode = glm::translate(glm::mat4(1.0), translationB);
-				glm::mat4 mvp = proj * view * mode;
-
-				shader.Bind();
-				shader.SetUniform4f("u_Color", r, 0.2, 0.9, 1.0);
-				shader.SetUniformMat4f("u_MVP", mvp);
-
-				renderer.Draw(va, ib, shader);
-			}
+			test.OnUpdate(0.0f);
+			test.OnRender();
+			ImGui_ImplGlfwGL3_NewFrame();
+			test.OnImGuiRender();
 			
 			
-
-			//Based on r value change increment.
-			increment = r > 1.0f ? -increment : increment;
-			increment = r < 0.0f ? -increment : increment;
-			r += increment;
-
-			// Show a simple window.
-			{
-				//Since translation is 3D float we need use SliderFloat3
-				ImGui::SliderFloat3("TranslationA", &translationA.x, 0.0f, 960.0f);
-				ImGui::SliderFloat3("TranslationB", &translationB.x, 0.0f, 960.0f);
-				ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-			}
 			// Rendering
 			ImGui::Render();
 			ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
