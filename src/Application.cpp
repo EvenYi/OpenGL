@@ -131,32 +131,45 @@ int main(void)
 	std::cout << glewGetString(GL_VERSION_1_1) << std::endl;
 
 	{
-		
+
 		//RGBa the "a" means alpha which decide how much transparent 
 		//GL_ONE_MINUS_SRC_ALPHA just let it complete transparent.
 		GLCall(glEnable(GL_BLEND));
 		GLCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-		
+
 		//Create context, inital window and style
 		ImGui::CreateContext();
 		ImGui_ImplGlfwGL3_Init(window, true);
 		ImGui::StyleColorsDark();
 
 		Renderer renderer;
-		test::TestClearColor test;
 
+		test::Test* currentTest = nullptr;
+		test::TestMenu* testMenu = new test::TestMenu(currentTest);
+		currentTest = testMenu;
+		testMenu->RegisterTest<test::TestClearColor>("Clear Color");
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
-
-			//Put this NewFrame before you put stuffs into frame
+			GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
 			renderer.Clear();
-			test.OnUpdate(0.0f);
-			test.OnRender();
+			//Put this NewFrame before you put stuffs into frame
 			ImGui_ImplGlfwGL3_NewFrame();
-			test.OnImGuiRender();
-			
-			
+			if (currentTest) {
+				//Since OnUpdate OnRender and OnImGuiRender is virtual function,
+				//it will dynamic call its own implement base on test type.
+				currentTest->OnUpdate(0.0f);
+				currentTest->OnRender();
+				ImGui::Begin("Tests");
+				if (currentTest != testMenu&& ImGui::Button("<-")) {
+					delete currentTest;
+					currentTest = testMenu;
+				}
+				currentTest->OnImGuiRender();
+				ImGui::End();
+			}
+
+
 			// Rendering
 			ImGui::Render();
 			ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
@@ -167,7 +180,7 @@ int main(void)
 			/* Poll for and process events */
 			glfwPollEvents();
 		}
-	
+
 	}
 	ImGui_ImplGlfwGL3_Shutdown();
 	ImGui::DestroyContext();
