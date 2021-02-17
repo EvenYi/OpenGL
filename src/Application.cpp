@@ -16,6 +16,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw_gl3.h"
 #include "test/TestClearColor.h"
+#include "test/TestTexture2D.h"
 
 /*
 struct ShaderProgramSource {
@@ -142,17 +143,17 @@ int main(void)
 		ImGui_ImplGlfwGL3_Init(window, true);
 		ImGui::StyleColorsDark();
 
-		Renderer renderer;
 
 		test::Test* currentTest = nullptr;
 		test::TestMenu* testMenu = new test::TestMenu(currentTest);
 		currentTest = testMenu;
 		testMenu->RegisterTest<test::TestClearColor>("Clear Color");
+		testMenu->RegisterTest<test::TestTexture2D>("2D Texture");
 		while (!glfwWindowShouldClose(window))
 		{
 			/* Render here */
 			GLCall(glClearColor(0.0f, 0.0f, 0.0f, 1.0f));
-			renderer.Clear();
+			GLCall(glClear(GL_COLOR_BUFFER_BIT));
 			//Put this NewFrame before you put stuffs into frame
 			ImGui_ImplGlfwGL3_NewFrame();
 			if (currentTest) {
