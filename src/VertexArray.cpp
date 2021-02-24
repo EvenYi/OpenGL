@@ -1,6 +1,7 @@
 #include "VertexArray.h"
 #include "VertexBufferLayout.h"
 #include "Renderer.h"
+#include "test/TestTexture2D.h"
 
 VertexArray::VertexArray()
 {
@@ -26,6 +27,23 @@ void VertexArray::Addbuffer(const VertexBuffer& vb, const VertexBufferLayout& la
 		offset += item.count * VertexBufferElement::GetSizeOfType(item.type);
 	}
 	
+}
+
+void VertexArray::Addbuffer(const VertexBuffer& vb)
+{
+	Bind();
+	vb.Bind();
+	GLCall(glEnableVertexAttribArray(0)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
+	GLCall(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(test::Vertex), (const void*)offsetof(test::Vertex, Position)));
+
+	GLCall(glEnableVertexAttribArray(1)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
+	GLCall(glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(test::Vertex), (const void*)offsetof(test::Vertex, TexCoords)));
+
+	GLCall(glEnableVertexAttribArray(2)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
+	GLCall(glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(test::Vertex), (const void*)offsetof(test::Vertex, Color)));
+
+	GLCall(glEnableVertexAttribArray(3)); //Specifies the index of the generic vertex attribute to be enabled or disabled.
+	GLCall(glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(test::Vertex), (const void*)offsetof(test::Vertex, TexID)));
 }
 
 void VertexArray::Bind() const

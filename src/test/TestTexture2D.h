@@ -7,7 +7,20 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "../Texture.h"
 namespace test {
-	class TestTexture2D: public Test
+	struct Vec2 {
+		float x, y;
+	};
+	struct Vec4 {
+		float x, y, z, w;
+	};
+	struct Vertex {
+		Vec2 Position;
+		Vec2 TexCoords;
+		Vec4 Color;
+		float TexID;
+	};
+
+	class TestTexture2D : public Test
 	{
 	public:
 		TestTexture2D();
@@ -29,6 +42,9 @@ namespace test {
 
 		glm::mat4 m_Proj, m_View;
 		glm::vec3 m_TranslationA, m_TranslationB, m_TranslationView;
+
+		float m_Quad1[2] = { -50.0f, -50.0f };
+		float m_Quad2[2] = { 70.0f, -50.0f };
 	};
 
 }

@@ -8,6 +8,7 @@ public:
 	VertexArray();
 	~VertexArray();
 	void Addbuffer(const VertexBuffer& vb, const VertexBufferLayout& layout);
+	void Addbuffer(const VertexBuffer& vb); //For dynamic buffer
 	void Bind() const;
 	void Unbind() const;
 
